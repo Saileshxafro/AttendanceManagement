@@ -80,36 +80,69 @@ namespace AttendanceManagement
 
         static void MarkAttendance(Dictionary<int, (string, string, string, List<(DateTime, string)>)> employeeData)
         {
-            Console.Write("Enter employee ID: ");
-            int employeeID;
-            if (int.TryParse(Console.ReadLine(), out employeeID))
-            {
-                if (employeeData.ContainsKey(employeeID))
-                {
-                    Console.Write("Enter password: ");
-                    string password = Console.ReadLine();
+            Console.WriteLine("Mark Attendance:");
+            Console.WriteLine("1. Clock In");
+            Console.WriteLine("2. Clock Out");
+            Console.Write("Enter your choice (1-2): ");
 
-                     
-                    if (password == employeeData[employeeID].Item2)
+            int choice;
+            if (int.TryParse(Console.ReadLine(), out choice))
+            {
+                string action = (choice == 1) ? "Clock In" : "Clock Out";
+                Console.Write("Enter employee ID: ");
+                int employeeID;
+                if (int.TryParse(Console.ReadLine(), out employeeID))
+                {
+                    if (employeeData.ContainsKey(employeeID))
                     {
+                        Console.Write("Enter password: ");
+                        string password = Console.ReadLine();
+
                         
-                        DateTime currentTime = DateTime.Now;
-                        employeeData[employeeID].Item4.Add((currentTime, "Clock In"));
-                        Console.WriteLine($"Attendance marked for employee {employeeID} - Clock In at {currentTime}.");
+                        if (password == employeeData[employeeID].Item2)
+                        {
+                            
+                            if (action == "Clock Out")
+                            {
+                                
+                                bool clockedIn = false;
+                                foreach (var record in employeeData[employeeID].Item4)
+                                {
+                                    if (record.Item2 == "Clock In")
+                                    {
+                                        clockedIn = true;
+                                        break;
+                                    }
+                                }
+                                if (!clockedIn)
+                                {
+                                    Console.WriteLine("Cannot clock out before clocking in.");
+                                    return;
+                                }
+                            }
+
+                            DateTime currentTime = DateTime.Now;
+                            employeeData[employeeID].Item4.Add((currentTime, action));
+                            Console.WriteLine($"Attendance marked for employee {employeeID} - {action} at {currentTime}.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Incorrect password. Attendance marking failed.");
+                        }
                     }
                     else
                     {
-                        Console.WriteLine("Incorrect password. Attendance marking failed.");
+                        Console.WriteLine($"Employee with ID {employeeID} does not exist.");
                     }
                 }
                 else
                 {
-                    Console.WriteLine($"Employee with ID {employeeID} does not exist.");
+                    Console.WriteLine("Invalid input. Please enter a valid employee ID.");
                 }
             }
             else
             {
-                Console.WriteLine("Invalid input. Please enter a valid employee ID.");
+                Console.WriteLine("Invalid input. Please enter a valid choice.");
             }
         }
 
