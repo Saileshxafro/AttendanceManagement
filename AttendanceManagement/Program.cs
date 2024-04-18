@@ -9,7 +9,7 @@ namespace AttendanceManagement
         {
             Console.WriteLine("Welcome to the Company Attendance Management System!");
 
-            Dictionary<int, (string, string)> employeeAttendance = new Dictionary<int, (string, string)>();
+            Dictionary<int, (string, string, string, List<(DateTime, string)>)> employeeData = new Dictionary<int, (string, string, string, List<(DateTime, string)>)>();
 
             while (true)
             {
@@ -26,13 +26,13 @@ namespace AttendanceManagement
                     switch (choice)
                     {
                         case 1:
-                            AddEmployeeRecord(employeeAttendance);
+                            AddEmployeeRecord(employeeData);
                             break;
                         case 2:
-                            MarkAttendance(employeeAttendance);
+                            MarkAttendance(employeeData);
                             break;
                         case 3:
-                            ViewAttendance(employeeAttendance);
+                            ViewAttendance(employeeData);
                             break;
                         case 4:
                             Console.WriteLine("Exiting...");
@@ -50,17 +50,21 @@ namespace AttendanceManagement
             }
         }
 
-        static void AddEmployeeRecord(Dictionary<int, (string, string)> attendance)
+        static void AddEmployeeRecord(Dictionary<int, (string, string, string, List<(DateTime, string)>)> employeeData)
         {
             Console.Write("Enter employee ID: ");
             int employeeID;
             if (int.TryParse(Console.ReadLine(), out employeeID))
             {
-                if (!attendance.ContainsKey(employeeID))
+                if (!employeeData.ContainsKey(employeeID))
                 {
                     Console.Write("Enter employee name: ");
                     string employeeName = Console.ReadLine();
-                    attendance.Add(employeeID, (employeeName, "A"));
+                    Console.Write("Enter employee password: ");
+                    string password = Console.ReadLine();
+                    Console.Write("Enter employee position: ");
+                    string position = Console.ReadLine();
+                    employeeData.Add(employeeID, (employeeName, password, position, new List<(DateTime, string)>()));
                     Console.WriteLine($"Employee with ID {employeeID} added successfully.");
                 }
                 else
@@ -74,24 +78,28 @@ namespace AttendanceManagement
             }
         }
 
-        static void MarkAttendance(Dictionary<int, (string, string)> attendance)
+        static void MarkAttendance(Dictionary<int, (string, string, string, List<(DateTime, string)>)> employeeData)
         {
             Console.Write("Enter employee ID: ");
             int employeeID;
             if (int.TryParse(Console.ReadLine(), out employeeID))
             {
-                if (attendance.ContainsKey(employeeID))
+                if (employeeData.ContainsKey(employeeID))
                 {
-                    Console.Write("Enter attendance status (P for present, A for absent): ");
-                    string status = Console.ReadLine().ToUpper();
-                    if (status == "P" || status == "A")
+                    Console.Write("Enter password: ");
+                    string password = Console.ReadLine();
+
+                     
+                    if (password == employeeData[employeeID].Item2)
                     {
-                        attendance[employeeID] = (attendance[employeeID].Item1, status);
-                        Console.WriteLine($"Attendance marked for employee {attendance[employeeID].Item1}.");
+                        
+                        DateTime currentTime = DateTime.Now;
+                        employeeData[employeeID].Item4.Add((currentTime, "Clock In"));
+                        Console.WriteLine($"Attendance marked for employee {employeeID} - Clock In at {currentTime}.");
                     }
                     else
                     {
-                        Console.WriteLine("Invalid input. Please enter P or A.");
+                        Console.WriteLine("Incorrect password. Attendance marking failed.");
                     }
                 }
                 else
@@ -105,12 +113,40 @@ namespace AttendanceManagement
             }
         }
 
-        static void ViewAttendance(Dictionary<int, (string, string)> attendance)
+        static void ViewAttendance(Dictionary<int, (string, string, string, List<(DateTime, string)>)> employeeData)
         {
-            Console.WriteLine("\nAttendance Report:");
-            foreach (var employee in attendance)
+            Console.Write("Enter employee ID: ");
+            int employeeID;
+            if (int.TryParse(Console.ReadLine(), out employeeID))
             {
-                Console.WriteLine($"Employee ID: {employee.Key}, Name: {employee.Value.Item1}, Status: {employee.Value.Item2}");
+                if (employeeData.ContainsKey(employeeID))
+                {
+                    Console.Write("Enter password: ");
+                    string password = Console.ReadLine();
+
+                    
+                    if (password == employeeData[employeeID].Item2)
+                    {
+                        
+                        Console.WriteLine("\nAttendance Report:");
+                        foreach (var record in employeeData[employeeID].Item4)
+                        {
+                            Console.WriteLine($"Date/Time: {record.Item1}, Action: {record.Item2}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Incorrect password. Attendance viewing failed.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Employee with ID {employeeID} does not exist.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid input. Please enter a valid employee ID.");
             }
         }
     }
